@@ -68,23 +68,13 @@ fn test_token_stream(tests_to_ignore: &[String], wrapped_test_ident: &Ident, tes
 ///
 /// The `proc_macro_attribute` should be used on a function with the current signature
 /// ```rust
+/// # use json_schema_test_suite_test_case::TestCase;
 /// fn my_simple_test(
 ///     // address of the HTTP server providing the remote files of JSON-Schema-Test-Suite. The format will be: `hostname:port`
 ///     // This parameter is passed because by starting a mock server we might not start it into `localhost:1234` as expected by JSON-Schema-Test-Suite
 ///     server_address: &str,
-///     // string representation of the draft version (equialent to the test directory)
-///     // This is usefull in case your test needs to be aware of the draft version under test
-///     draft_version: &str,
-///     // Description of the test group as provided by JSON-Schema-Test-Suite
-///     group_description: &str,
-///     // Description of the test group as provided by JSON-Schema-Test-Suite
-///     test_case_description: &str,
-///     // Schema to be tested
-///     schema: serde_json::Value,
-///     // Instance to be validated against the `schema
-///     instance: serde_json::Value,
-///     // Expected validity status as from JSON-Schema-Test-Suite
-///     expected_valid: bool
+///     // Representation of the test case (includes draft_version, descriptions, schema, instance, expected_valid)
+///     test_case: TestCase,
 /// ) {
 ///     // TODO: Add here your testing logic
 /// }
