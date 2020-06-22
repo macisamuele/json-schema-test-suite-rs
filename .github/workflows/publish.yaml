@@ -1,0 +1,120 @@
+name: Release on crates.io
+on:
+  push:
+    tags: v**
+
+jobs:
+
+  check-versions-in-sync-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - name: Ensure that all the workspace members define the same version
+      # There will be definitely a way to do this better ... so far this is kinda OK-ish
+      run: |
+        cargo metadata --format-version 1 > /tmp/metadata.json
+        cat > /tmp/test.py <<EOF
+        import json
+
+        metadata = json.load(open("/tmp/metadata.json"))
+        workspace_members = {line.split()[0] for line in metadata["workspace_members"]}
+
+        packages = [
+            package for package in metadata["packages"] if package["name"] in workspace_members
+        ]
+        package_name_to_package_version = {
+            package["name"]: package["version"] for package in packages
+        }
+        assert (
+            len(set(package_name_to_package_version.values())) == 1
+        ), "Not all the workspace member have the same version {}".format(
+            package_name_to_package_version
+        )
+
+        version = packages[0]["version"]
+        packages_with_versions_out_of_sync = {
+            package["name"]
+            for package in packages
+            if any(
+                dependency["name"] in workspace_members
+                and dependency["req"] != "= {}".format(version)
+                for dependency in package["dependencies"]
+            )
+        }
+        assert not packages_with_versions_out_of_sync, packages_with_versions_out_of_sync
+        EOF
+        python /tmp/test.py
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --workspace
+
+  publish-test-case:
+    needs: [check-versions-in-sync-and-test]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: login
+        args: ${{ secrets.CRATES_IO_TOKEN }}
+    - uses: actions-rs/cargo@v1
+      with:
+        command: publish
+        args: --manifest-path ./test_case/Cargo.toml
+
+  publish-proc-macro:
+    needs: [publish-test-case]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: login
+        args: ${{ secrets.CRATES_IO_TOKEN }}
+    - uses: actions-rs/cargo@v1
+      with:
+        command: publish
+        args: --manifest-path ./proc_macro/Cargo.toml
+
+  publish:
+    needs: [publish-proc-macro]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: login
+        args: ${{ secrets.CRATES_IO_TOKEN }}
+    - uses: actions-rs/cargo@v1
+      with:
+        command: publish
+

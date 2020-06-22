@@ -1,0 +1,118 @@
+name: ci
+
+on:
+  pull_request: {}
+  push:
+    branches:
+    - master
+    - test-against-JSON-Test-Schema
+
+jobs:
+  check:
+    # This is a quick way to check if the code (tests excluded) are compilable
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --workspace
+
+  test-stable:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    name: "[${{ matrix.os }}] Test Stable"
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --workspace
+
+  coverage:
+    name: Coverage (runs on nightly)
+    if: github.repository_owner == 'macisamuele'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: clean
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --no-fail-fast --workspace
+      env:
+        CARGO_INCREMENTAL: "0"
+        RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off
+    - id: coverage
+      uses: actions-rs/grcov@v0.1
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.5
+      with:
+        name: coverage
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ${{ steps.coverage.outputs.report }}
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        override: true
+        components: rustfmt
+    - run: rustup component add rustfmt
+    - uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true
+    - uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+        components: clippy
+    - run: rustup component add clippy
+    - uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-targets --workspace
