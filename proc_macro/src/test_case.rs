@@ -47,7 +47,8 @@ fn load_inner(json_schema_test_suite_path: &Path, dir: &Path, prefix: &str) -> V
                     json_schema_test_suite_path,
                     &path,
                     &format!(
-                        "{}_",
+                        "{}{}_",
+                        prefix,
                         path.file_name().and_then(OsStr::to_str).unwrap_or_else(|| {
                             panic!("No issues are expected while extracting the filename from path={}", path.display())
                         })
