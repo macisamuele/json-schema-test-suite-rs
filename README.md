@@ -1,9 +1,9 @@
 # json_schema_test_suite
 
 [![ci](https://github.com/macisamuele/json-schema-test-suite-rs/workflows/ci/badge.svg)](https://github.com/macisamuele/json-schema-test-suite-rs/actions)
-[![codecov](https://codecov.io/gh/macisamuele/json-schema-test-suite/branch/master/graph/badge.svg)](https://codecov.io/gh/macisamuele/json-schema-test-suite-rs)
+[![codecov](https://codecov.io/gh/macisamuele/json-schema-test-suite-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/macisamuele/json-schema-test-suite-rs)
 [![Crates.io](https://img.shields.io/crates/v/json-schema-test-suite.svg)](https://crates.io/crates/json-schema-test-suite)
-[![docs.rs](https://docs.rs/json-schema-test-suite/badge.svg)](https://docs.rs/json-schema-test-suite/)
+[![docs.rs](https://docs.rs/json_schema_test_suite/badge.svg)](https://docs.rs/json-schema-test-suite/)
 
 The crate provides a procedural macro attribute that allow to generate all the test cases
 described by [JSON-Schema-Test-Suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite).
@@ -21,9 +21,9 @@ In order to ude the procedural macro attribute there are few assumptions that ar
   section of the `Cargo.toml` file
 * the annotated method signature should be: `fn (&str, json_schema_test_suite::TestCase) -> ()`
 
-### How to use
+## How to use
 
-##### Cargo.toml
+### Cargo.toml
 
 ```toml
 # Ensure that the following lines are present into your Cargo.toml file
@@ -36,7 +36,7 @@ mockito = "*"
 serde_json = "*"
 ```
 
-##### Rust test file example
+### Rust test file example
 
 ```rust
 use json_schema_test_suite::{json_schema_test_suite, TestCase};

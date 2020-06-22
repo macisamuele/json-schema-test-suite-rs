@@ -8,7 +8,7 @@ readme = "README.md"
 keywords = ["jsonschema"]
 categories = ["development-tools::procedural-macro-helpers", "development-tools::testing"]
 description = "Procedural Macro Attribute to run all the test cases described in JSON-Schema-Test-Suite"
-repository = "https://github.com/macisamuele/json-schema-test-suite"
+repository = "https://github.com/macisamuele/json-schema-test-suite-rs"
 documentation = "http://docs.rs/json-schema-test-suite"
 license = "MIT"
 
