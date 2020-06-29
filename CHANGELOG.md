@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (2020-06-29)
+
+* Ignore tests accepts regular expressions
+
 ## 0.2.0 (2020-06-22)
 
 * Fix documentation links
