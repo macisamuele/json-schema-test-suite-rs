@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 use syn::{
     braced,
@@ -9,7 +10,7 @@ use syn::{
 pub(crate) struct AttrConfig {
     pub(crate) json_schema_test_suite_path: PathBuf,
     pub(crate) draft_folder: String,
-    pub(crate) tests_to_exclude: Vec<String>,
+    pub(crate) tests_to_exclude_regex: Vec<Regex>,
 }
 
 impl Parse for AttrConfig {
@@ -17,7 +18,7 @@ impl Parse for AttrConfig {
         let json_schema_test_suite_path_str: String = input.parse::<LitStr>()?.value();
         let _ = input.parse::<Token![,]>()?;
         let draft_folder: String = input.parse::<LitStr>()?.value();
-        let tests_to_exclude: Vec<String> = if input.parse::<Token![,]>().is_ok() {
+        let tests_to_exclude_regex: Vec<Regex> = if input.parse::<Token![,]>().is_ok() {
             let tests_to_exclude_tokens = {
                 let braced_content;
                 braced!(braced_content in input);
@@ -25,11 +26,10 @@ impl Parse for AttrConfig {
                 let res: syn::punctuated::Punctuated<LitStr, Token![,]> = braced_content.parse_terminated(|v| v.parse())?;
                 res
             };
-            let mut res = Vec::new();
-            for content in tests_to_exclude_tokens {
-                res.push(content.value());
-            }
-            res
+            tests_to_exclude_tokens
+                .iter()
+                .filter_map(|content| Regex::new(&format!("^{}$", content.value())).ok())
+                .collect()
         } else {
             vec![]
         };
@@ -40,7 +40,7 @@ impl Parse for AttrConfig {
         Ok(Self {
             json_schema_test_suite_path,
             draft_folder,
-            tests_to_exclude,
+            tests_to_exclude_regex,
         })
     }
 }
