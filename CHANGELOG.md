@@ -1,5 +1,7 @@
 # Changelog
 
+* Support for generating tests for Draft 2019-09 and 2020-12
+
 ## 0.3.0 (2020-06-29)
 
 * Ignore tests accepts regular expressions

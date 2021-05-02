@@ -96,7 +96,11 @@ pub fn json_schema_test_suite(attr: TokenStream, item: TokenStream) -> TokenStre
 
     let setup_mockito_mocks_token_stream = mockito_mocks::setup(&proc_macro_attributes.json_schema_test_suite_path);
 
-    let mod_name = format_ident!("{}_{}", original_function_ident, proc_macro_attributes.draft_folder);
+    let mod_name = format_ident!(
+        "{}_{}",
+        original_function_ident,
+        proc_macro_attributes.draft_folder.replace("-", "_")
+    );
 
     let output = quote! {
         #item_fn
